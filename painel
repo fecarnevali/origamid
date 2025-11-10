@@ -1,0 +1,562 @@
+import React, { useState, useEffect } from 'react';
+import { Package, Tag, Plus, Edit2, Trash2, BarChart3, ShoppingBag, Users, DollarSign } from 'lucide-react';
+
+export default function FarneShopAdmin() {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
+
+  // Inicializar dados
+  useEffect(() => {
+    const initialCategories = [
+      { id: 1, name: 'Eletrônicos', slug: 'eletronicos' },
+      { id: 2, name: 'Moda', slug: 'moda' },
+      { id: 3, name: 'Casa', slug: 'casa' },
+      { id: 4, name: 'Esportes', slug: 'esportes' }
+    ];
+
+    const initialProducts = [
+      { id: 1, name: 'Smartphone XZ', price: 1299.99, category: 1, image: '📱', description: 'Smartphone com 128GB', stock: 15 },
+      { id: 2, name: 'Notebook Pro', price: 3499.99, category: 1, image: '💻', description: 'Notebook i7 16GB RAM', stock: 8 },
+      { id: 3, name: 'Camiseta Premium', price: 89.90, category: 2, image: '👕', description: 'Camiseta 100% algodão', stock: 50 },
+      { id: 4, name: 'Tênis Sport', price: 299.90, category: 4, image: '👟', description: 'Tênis para corrida', stock: 20 }
+    ];
+
+    setCategories(initialCategories);
+    setProducts(initialProducts);
+  }, []);
+
+  // Funções de Produtos
+  const handleSaveProduct = (product) => {
+    if (editingProduct && editingProduct.id) {
+      setProducts(products.map(p => p.id === product.id ? product : p));
+    } else {
+      const newProduct = { ...product, id: Date.now() };
+      setProducts([...products, newProduct]);
+    }
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProduct = (id) => {
+    if (confirm('Deseja realmente excluir este produto?')) {
+      setProducts(products.filter(p => p.id !== id));
+    }
+  };
+
+  // Funções de Categorias
+  const handleSaveCategory = (category) => {
+    if (editingCategory && editingCategory.id) {
+      setCategories(categories.map(c => c.id === category.id ? category : c));
+    } else {
+      const newCategory = { ...category, id: Date.now() };
+      setCategories([...categories, newCategory]);
+    }
+    setEditingCategory(null);
+  };
+
+  const handleDeleteCategory = (id) => {
+    if (confirm('Deseja realmente excluir esta categoria?')) {
+      setCategories(categories.filter(c => c.id !== id));
+    }
+  };
+
+  // Estatísticas do Dashboard
+  const stats = {
+    totalProducts: products.length,
+    totalCategories: categories.length,
+    totalValue: products.reduce((sum, p) => sum + (p.price * p.stock), 0),
+    lowStock: products.filter(p => p.stock < 10).length
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">⚙️ Farne Shop Admin</h1>
+              <p className="text-indigo-100 text-sm">Painel de Administração</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm text-indigo-100">Bem-vindo,</p>
+                <p className="font-semibold">Administrador</p>
+              </div>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl">
+                👤
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 bg-white shadow-lg min-h-screen">
+          <nav className="p-4">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition ${
+                activeTab === 'dashboard' 
+                  ? 'bg-indigo-600 text-white' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <BarChart3 size={20} />
+              <span className="font-semibold">Dashboard</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition ${
+                activeTab === 'products' 
+                  ? 'bg-indigo-600 text-white' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Package size={20} />
+              <span className="font-semibold">Produtos</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition ${
+                activeTab === 'categories' 
+                  ? 'bg-indigo-600 text-white' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Tag size={20} />
+              <span className="font-semibold">Categorias</span>
+            </button>
+          </nav>
+        </aside>
+
+        {/* Conteúdo Principal */}
+        <main className="flex-1 p-8">
+          {activeTab === 'dashboard' && (
+            <Dashboard stats={stats} products={products} />
+          )}
+          {activeTab === 'products' && (
+            <ProductsAdmin
+              products={products}
+              categories={categories}
+              editingProduct={editingProduct}
+              setEditingProduct={setEditingProduct}
+              onSave={handleSaveProduct}
+              onDelete={handleDeleteProduct}
+            />
+          )}
+          {activeTab === 'categories' && (
+            <CategoriesAdmin
+              categories={categories}
+              editingCategory={editingCategory}
+              setEditingCategory={setEditingCategory}
+              onSave={handleSaveCategory}
+              onDelete={handleDeleteCategory}
+            />
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// Componente Dashboard
+function Dashboard({ stats, products }) {
+  return (
+    <div>
+      <h2 className="text-3xl font-bold mb-6 text-gray-800">📊 Dashboard</h2>
+      
+      {/* Cards de Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold">Total de Produtos</p>
+              <p className="text-3xl font-bold text-gray-800 mt-2">{stats.totalProducts}</p>
+            </div>
+            <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
+              <ShoppingBag size={28} className="text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold">Categorias</p>
+              <p className="text-3xl font-bold text-gray-800 mt-2">{stats.totalCategories}</p>
+            </div>
+            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+              <Tag size={28} className="text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold">Valor em Estoque</p>
+              <p className="text-3xl font-bold text-gray-800 mt-2">
+                R$ {stats.totalValue.toFixed(0)}
+              </p>
+            </div>
+            <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
+              <DollarSign size={28} className="text-purple-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-semibold">Estoque Baixo</p>
+              <p className="text-3xl font-bold text-gray-800 mt-2">{stats.lowStock}</p>
+            </div>
+            <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center">
+              <Package size={28} className="text-orange-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Produtos com Estoque Baixo */}
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h3 className="text-xl font-bold mb-4 text-gray-800">⚠️ Produtos com Estoque Baixo</h3>
+        {products.filter(p => p.stock < 10).length > 0 ? (
+          <div className="space-y-3">
+            {products.filter(p => p.stock < 10).map(product => (
+              <div key={product.id} className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="flex items-center gap-4">
+                  <span className="text-3xl">{product.image}</span>
+                  <div>
+                    <p className="font-semibold text-gray-800">{product.name}</p>
+                    <p className="text-sm text-gray-600">Estoque atual: {product.stock} unidades</p>
+                  </div>
+                </div>
+                <span className="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold">
+                  Reabastecer
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-8">✅ Todos os produtos estão com estoque adequado</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Componente Admin de Produtos
+function ProductsAdmin({ products, categories, editingProduct, setEditingProduct, onSave, onDelete }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    price: '',
+    category: '',
+    image: '📦',
+    description: '',
+    stock: ''
+  });
+
+  useEffect(() => {
+    if (editingProduct) {
+      setFormData(editingProduct);
+    }
+  }, [editingProduct]);
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.price || !formData.category || !formData.stock) {
+      alert('⚠️ Preencha todos os campos obrigatórios');
+      return;
+    }
+    onSave({
+      ...formData,
+      price: parseFloat(formData.price),
+      category: parseInt(formData.category),
+      stock: parseInt(formData.stock)
+    });
+    setFormData({ name: '', price: '', category: '', image: '📦', description: '', stock: '' });
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-bold text-gray-800">📦 Gerenciar Produtos</h2>
+        <button
+          onClick={() => setEditingProduct({})}
+          className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-md font-semibold"
+        >
+          <Plus className="inline mr-2" size={20} />
+          Novo Produto
+        </button>
+      </div>
+
+      {editingProduct !== null && (
+        <div className="bg-white p-8 rounded-xl shadow-md mb-6">
+          <h3 className="text-2xl font-bold mb-6 text-gray-800">
+            {editingProduct.id ? '✏️ Editar Produto' : '➕ Novo Produto'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Nome do Produto *</label>
+              <input
+                type="text"
+                placeholder="Ex: Smartphone XZ"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Preço (R$) *</label>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Categoria *</label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="">Selecione uma categoria</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Estoque *</label>
+              <input
+                type="number"
+                placeholder="0"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Emoji/Ícone</label>
+              <input
+                type="text"
+                placeholder="📦"
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Descrição</label>
+              <textarea
+                placeholder="Descrição detalhada do produto..."
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                rows="3"
+              />
+            </div>
+          </div>
+          <div className="flex gap-4 mt-6">
+            <button 
+              onClick={handleSubmit} 
+              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold shadow-md"
+            >
+              ✅ Salvar Produto
+            </button>
+            <button
+              onClick={() => {
+                setEditingProduct(null);
+                setFormData({ name: '', price: '', category: '', image: '📦', description: '', stock: '' });
+              }}
+              className="px-8 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold"
+            >
+              ❌ Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Produto</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Categoria</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Preço</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Estoque</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map(product => (
+              <tr key={product.id} className="border-b hover:bg-gray-50 transition">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{product.image}</span>
+                    <span className="font-semibold text-gray-800">{product.name}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-gray-600">
+                  {categories.find(c => c.id === product.category)?.name}
+                </td>
+                <td className="px-6 py-4 text-gray-800 font-semibold">
+                  R$ {product.price.toFixed(2)}
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    product.stock < 10 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
+                  }`}>
+                    {product.stock}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingProduct(product)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button
+                      onClick={() => onDelete(product.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// Componente Admin de Categorias
+function CategoriesAdmin({ categories, editingCategory, setEditingCategory, onSave, onDelete }) {
+  const [formData, setFormData] = useState({ name: '', slug: '' });
+
+  useEffect(() => {
+    if (editingCategory) {
+      setFormData(editingCategory);
+    }
+  }, [editingCategory]);
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.slug) {
+      alert('⚠️ Preencha todos os campos');
+      return;
+    }
+    onSave(formData);
+    setFormData({ name: '', slug: '' });
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-bold text-gray-800">🏷️ Gerenciar Categorias</h2>
+        <button
+          onClick={() => setEditingCategory({})}
+          className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-md font-semibold"
+        >
+          <Plus className="inline mr-2" size={20} />
+          Nova Categoria
+        </button>
+      </div>
+
+      {editingCategory !== null && (
+        <div className="bg-white p-8 rounded-xl shadow-md mb-6">
+          <h3 className="text-2xl font-bold mb-6 text-gray-800">
+            {editingCategory.id ? '✏️ Editar Categoria' : '➕ Nova Categoria'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Nome da Categoria *</label>
+              <input
+                type="text"
+                placeholder="Ex: Eletrônicos"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Slug (URL) *</label>
+              <input
+                type="text"
+                placeholder="eletronicos"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase() })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div className="flex gap-4 mt-6">
+            <button 
+              onClick={handleSubmit} 
+              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold shadow-md"
+            >
+              ✅ Salvar Categoria
+            </button>
+            <button
+              onClick={() => {
+                setEditingCategory(null);
+                setFormData({ name: '', slug: '' });
+              }}
+              className="px-8 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold"
+            >
+              ❌ Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Nome</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Slug</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map(category => (
+              <tr key={category.id} className="border-b hover:bg-gray-50 transition">
+                <td className="px-6 py-4 font-semibold text-gray-800">{category.name}</td>
+                <td className="px-6 py-4 text-gray-600 font-mono text-sm">{category.slug}</td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingCategory(category)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button
+                      onClick={() => onDelete(category.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
