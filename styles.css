@@ -15,6 +15,20 @@ footer {
     bottom: 0;
 }
 
+.hoje {
+    color: darkred;
+    font-weight: bold;
+}
+
+.amanha {
+    color: darkblue;
+    font-style: italic;
+}
+
+a {
+    text-decoration: none;
+}
+
 .menu {
     background-color: #f4f4f4;
     padding: 10px;
@@ -28,13 +42,10 @@ h2 {
     margin-bottom: 15px;
 }
 
-h3 {
-    font-size: 1.5em;
-    color: green;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    text-decoration: underline;
-}
+h3 a {
+    color: seagreen;
+    
+}   
 
 img {
     max-width: 10%;
