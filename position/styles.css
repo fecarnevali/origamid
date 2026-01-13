@@ -1,11 +1,13 @@
-h1 {
+.grid {
   margin: 0px;
   padding: 10px;
   background: lightblue;
+  padding:2px;
+
 }
 
-.index {
-  position: relative;
+.flex {
+  position: flex;
   background: greenyellow;
   top: 40px;
   z-index: 1;
